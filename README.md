@@ -57,3 +57,6 @@ Web APIs:
 Gamepad API (Haptic Actuators / Dual-Rumble)
 
 WebHID API (Direct Output Reports & CRC32 checksum calculations for Sony/Nintendo hardware)
+
+
+DOWNLOAD >>> https://github.com/cdqp/ShakeMyController/blob/main/ShakeMyController.html
