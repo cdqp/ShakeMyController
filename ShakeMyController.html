@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
+<meta name="description" content="Teste et pilote la vibration de ta manette (DualSense, DualShock 4, Switch Pro, Joy-Con, Xbox…) directement dans le navigateur.">
 <title>ShakeMyController</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+<script>
+  // Apply the saved (or system) theme before first paint to avoid a flash.
+  try{
+    var t=localStorage.getItem("smc-theme");
+    document.documentElement.dataset.theme=t==="light"||t==="dark"?t:(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+  }catch(e){}
+</script>
 <style>
   :root{
     --bg:#07090d;--bg2:#0b0f15;--panel:#11161e;--panel2:#0d1219;--line:#242c38;
@@ -64,13 +73,19 @@
     padding:0 12px;font:inherit;font-size:14px;outline:none
   }
   select:focus,input[type="number"]:focus{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 16%,transparent)}
-  .box{border:1px solid var(--line);background:var(--panel2);border-radius:17px;padding:15px}
   .sliders{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .slider-box{border:1px solid var(--line);background:var(--panel2);border-radius:17px;padding:15px}
+  .slider-head label{cursor:pointer}
   .val{color:var(--text);font-variant-numeric:tabular-nums}
   input[type="range"]{width:100%;accent-color:var(--accent);cursor:pointer}
   .meter{height:5px;background:var(--control2);border-radius:999px;overflow:hidden;margin-top:9px}
   .meter>i{display:block;height:100%;width:50%;background:var(--accent);border-radius:inherit;transition:width .08s linear}
+
+  .toggle{
+    margin-top:14px;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--panel2);
+    border-radius:17px;padding:13px 15px;font-size:13px;font-weight:750;color:var(--muted);cursor:pointer
+  }
+  .toggle input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer;flex:none}
 
   .advanced{margin-top:14px;display:none}
   .advanced.show{display:grid}
@@ -124,16 +139,16 @@
       <h1>ShakeMy<span>Controller</span></h1>
       <p>Vibration locale · aucune donnée envoyée · USB, Bluetooth et sans-fil selon la manette</p>
     </div>
-    <div class="themes" aria-label="Thème">
-      <button class="theme-btn theme-dark" id="themeDark" aria-label="Mode sombre" title="Mode sombre"></button>
-      <button class="theme-btn theme-light" id="themeLight" aria-label="Mode clair" title="Mode clair"></button>
+    <div class="themes" role="group" aria-label="Thème">
+      <button class="theme-btn theme-dark" id="themeDark" type="button" aria-label="Mode sombre" title="Mode sombre"></button>
+      <button class="theme-btn theme-light" id="themeLight" type="button" aria-label="Mode clair" title="Mode clair"></button>
     </div>
   </header>
 
   <main class="panel">
     <section class="status" aria-live="polite">
       <div class="status-main">
-        <span class="dot" id="statusDot"></span>
+        <span class="dot" id="statusDot" aria-hidden="true"></span>
         <div style="min-width:0">
           <div class="status-title" id="statusTitle">Aucune manette connectée</div>
           <div class="status-sub" id="statusSub">Allume la manette, puis utilise « Connecter la manette ».</div>
@@ -179,35 +194,40 @@
 
       <div class="sliders">
         <div class="slider-box">
-          <div class="slider-head"><span>Moteur gauche / grave</span><span class="val" id="leftValue">70 %</span></div>
+          <div class="slider-head"><label for="leftPower">Moteur gauche / grave</label><output class="val" id="leftValue" for="leftPower">70 %</output></div>
           <input type="range" id="leftPower" min="0" max="100" value="70">
-          <div class="meter"><i id="leftMeter" style="width:70%"></i></div>
+          <div class="meter" title="Intensité envoyée en temps réel"><i id="leftMeter" style="width:70%"></i></div>
         </div>
         <div class="slider-box">
-          <div class="slider-head"><span>Moteur droit / aigu</span><span class="val" id="rightValue">70 %</span></div>
+          <div class="slider-head"><label for="rightPower">Moteur droit / aigu</label><output class="val" id="rightValue" for="rightPower">70 %</output></div>
           <input type="range" id="rightPower" min="0" max="100" value="70">
-          <div class="meter"><i id="rightMeter" style="width:70%"></i></div>
+          <div class="meter" title="Intensité envoyée en temps réel"><i id="rightMeter" style="width:70%"></i></div>
         </div>
       </div>
 
       <div class="grid" style="margin-top:14px">
         <div class="slider-box">
-          <div class="slider-head"><span>Vitesse / rythme</span><span class="val" id="speedValue">300 ms</span></div>
+          <div class="slider-head"><label for="speed">Vitesse / rythme</label><output class="val" id="speedValue" for="speed">300 ms</output></div>
           <input type="range" id="speed" min="60" max="1600" step="10" value="300">
         </div>
         <div class="slider-box">
-          <div class="slider-head"><span>Durée du TEST</span><span class="val" id="testValue">800 ms</span></div>
+          <div class="slider-head"><label for="testDuration">Durée du TEST</label><output class="val" id="testValue" for="testDuration">800 ms</output></div>
           <input type="range" id="testDuration" min="150" max="3000" step="50" value="800">
         </div>
       </div>
 
+      <label class="toggle hidden" id="triggerToggle">
+        <input type="checkbox" id="triggers">
+        <span>Vibrer aussi les gâchettes (Impulse Triggers Xbox)</span>
+      </label>
+
       <div class="grid advanced" id="nintendoAdvanced">
         <div class="slider-box">
-          <div class="slider-head"><span>HD Rumble · basse fréquence</span><span class="val" id="lowFreqValue">160 Hz</span></div>
+          <div class="slider-head"><label for="lowFreq">HD Rumble · basse fréquence</label><output class="val" id="lowFreqValue" for="lowFreq">160 Hz</output></div>
           <input type="range" id="lowFreq" min="41" max="626" value="160">
         </div>
         <div class="slider-box">
-          <div class="slider-head"><span>HD Rumble · haute fréquence</span><span class="val" id="highFreqValue">320 Hz</span></div>
+          <div class="slider-head"><label for="highFreq">HD Rumble · haute fréquence</label><output class="val" id="highFreqValue" for="highFreq">320 Hz</output></div>
           <input type="range" id="highFreq" min="82" max="1253" value="320">
         </div>
       </div>
@@ -223,14 +243,14 @@
       </div>
 
       <div class="actions">
-        <button class="action" id="connectBtn">Connecter la manette</button>
-        <button class="action shake" id="shakeBtn">SHAKE / STOP</button>
-        <button class="action" id="testBtn">TEST</button>
+        <button class="action" id="connectBtn" type="button">Connecter la manette</button>
+        <button class="action shake" id="shakeBtn" type="button" aria-pressed="false">SHAKE</button>
+        <button class="action" id="testBtn" type="button">TEST</button>
       </div>
     </section>
 
     <div class="foot" id="footNote">
-      Recommandé : Chrome ou Edge sur ordinateur. USB-C et USB-A sont traités comme USB ; les dongles 2,4 GHz dépendent du pilote de la manette.
+      Recommandé : Chrome ou Edge sur ordinateur. USB-C et USB-A sont traités comme USB ; les dongles 2,4 GHz dépendent du pilote de la manette. Touche Échap : arrêt immédiat.
     </div>
   </main>
 </div>
@@ -244,6 +264,17 @@
   const $ = id => document.getElementById(id);
   const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
   const sleep = ms => new Promise(r => setTimeout(r,ms));
+  const store = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+
+  const TICK_MS=40;              // pattern resolution / output refresh rate
+  const GAMEPAD_MARGIN_MS=120;   // each Gamepad effect outlives a tick so there is no gap
+  const SONY_KEEPALIVE_MS=1000;  // Sony motors hold their value: resend only on change
+  const HID_KINDS=["dualsense","ds4","switchpro","joycon"];
+  const isSony=k => k==="dualsense" || k==="ds4";
+  const isNintendo=k => k==="switchpro" || k==="joycon";
 
   const PROFILES = {
     auto: {
@@ -318,19 +349,67 @@
     }
   };
 
-  let state = {
+  // Known USB vendor/product IDs, shared by Gamepad API ids and WebHID devices.
+  const VENDORS = {
+    0x054c: pid => [0x0ce6,0x0df2].includes(pid) ? "dualsense" : [0x05c4,0x09cc,0x0ba0].includes(pid) ? "ds4" : null,
+    0x057e: pid => pid===0x2009 ? "switchpro" : [0x2006,0x2007,0x200e].includes(pid) ? "joycon" : null,
+    0x045e: pid => [0x0b00,0x0b05,0x0b22].includes(pid) ? "elite2" : "xbox",
+    0x046d: pid => [0xc216,0xc21d].includes(pid) ? "f310" : null,
+    0x28de: () => "steam",
+    0x2dc8: () => "8bitdo",
+    0x1532: () => "razer"
+  };
+
+  const state = {
     gpIndex:null,
     hid:null,
     hidKind:null,
     hidTransport:"unknown",
-    profile:"auto",
+    output:null,          // "hid" | "gamepad": the path attached last wins
+    detected:null,        // profile key of the connected controller
     running:false,
     token:0,
     nintendoReady:false,
-    lastRandomAt:0,
+    dsVibrationV2:false,
+    lastRandomAt:-Infinity,
     randomPair:[1,1],
-    btSeq:0
+    seq:0,
+    lastSony:null,
+    noPlayEffect:false,
+    noTriggers:false
   };
+
+  const ui = {
+    profile:$("profile"), pattern:$("pattern"),
+    left:$("leftPower"), right:$("rightPower"),
+    speed:$("speed"), testDuration:$("testDuration"),
+    lowFreq:$("lowFreq"), highFreq:$("highFreq"),
+    triggers:$("triggers"),
+    leftMeter:$("leftMeter"), rightMeter:$("rightMeter"),
+    shake:$("shakeBtn")
+  };
+  const SETTINGS=["profile","pattern","left","right","speed","testDuration","lowFreq","highFreq","triggers"];
+
+  function loadSettings(){
+    let saved;
+    try{ saved=JSON.parse(store.get("smc-settings")||"{}"); }catch(e){ saved={}; }
+    for(const k of SETTINGS){
+      if(!(k in saved)) continue;
+      const el=ui[k];
+      if(el.type==="checkbox") el.checked=!!saved[k];
+      else if(el.tagName==="SELECT"){ if([...el.options].some(o=>o.value===saved[k])) el.value=saved[k]; }
+      else el.value=saved[k];
+    }
+  }
+  function saveSettings(){
+    const out={};
+    for(const k of SETTINGS) out[k]=ui[k].type==="checkbox"?ui[k].checked:ui[k].value;
+    store.set("smc-settings",JSON.stringify(out));
+  }
+  loadSettings();
+  for(const k of SETTINGS) ui[k].addEventListener("change",saveSettings);
+
+  const num = el => Number(el.value);
 
   function toast(msg, ms=2600){
     const el=$("toast");
@@ -343,82 +422,84 @@
   function setStatus(title, sub, mode="idle", pill="EN ATTENTE"){
     $("statusTitle").textContent=title;
     $("statusSub").textContent=sub;
+    $("statusSub").title=sub;
     $("driverPill").textContent=pill;
     $("statusDot").className="dot"+(mode==="ok"?" ok":mode==="warn"?" warn":mode==="bad"?" bad":"");
   }
 
-  function setTheme(theme){
+  function setTheme(theme, persist=true){
     document.documentElement.dataset.theme=theme;
-    localStorage.setItem("smc-theme",theme);
+    if(persist) store.set("smc-theme",theme);
     $("themeDark").setAttribute("aria-pressed",theme==="dark");
     $("themeLight").setAttribute("aria-pressed",theme==="light");
   }
   $("themeDark").onclick=()=>setTheme("dark");
   $("themeLight").onclick=()=>setTheme("light");
-  setTheme(localStorage.getItem("smc-theme")==="light"?"light":"dark");
+  setTheme(document.documentElement.dataset.theme==="light"?"light":"dark",false);
 
   function renderProfile(){
-    const menuValue=$("profile").value;
-    const selected=(menuValue==="auto" && state.profile!=="auto") ? state.profile : menuValue;
+    const menuValue=ui.profile.value;
+    const selected=menuValue==="auto" ? (state.detected||"auto") : menuValue;
     const p=PROFILES[selected] || PROFILES.auto;
     $("capTitle").textContent=p.title;
     $("capText").textContent=p.text;
-    const chips=$("chips");
-    chips.innerHTML="";
-    p.chips.forEach(c=>{
+    $("chips").replaceChildren(...p.chips.map(c=>{
       const s=document.createElement("span");
       s.className="chip "+(/pas de vibration/i.test(c)?"no":"yes");
       s.textContent=c;
-      chips.appendChild(s);
-    });
-    const nintendo = selected==="switchpro" || selected==="joycon" ||
-      state.hidKind==="switchpro" || state.hidKind==="joycon";
+      return s;
+    }));
+    const nintendo=isNintendo(selected) || (state.output==="hid" && isNintendo(state.hidKind));
     $("nintendoAdvanced").classList.toggle("show",nintendo);
   }
-  $("profile").onchange=()=>{
-    state.profile=$("profile").value;
-    renderProfile();
-  };
-  renderProfile();
+  ui.profile.addEventListener("change",renderProfile);
 
-  function bindRange(id, valueId, suffix, meterId){
+  function setDetected(kind){
+    state.detected=kind && PROFILES[kind] ? kind : null;
+    renderProfile();
+  }
+
+  function bindRange(id, valueId, suffix, meter){
     const el=$(id), out=$(valueId);
     const run=()=>{
       out.textContent=el.value+" "+suffix;
-      if(meterId) $(meterId).style.width=el.value+"%";
+      if(meter && !state.running) meter.style.width=el.value+"%";
     };
     el.addEventListener("input",run); run();
   }
-  bindRange("leftPower","leftValue","%","leftMeter");
-  bindRange("rightPower","rightValue","%","rightMeter");
+  bindRange("leftPower","leftValue","%",ui.leftMeter);
+  bindRange("rightPower","rightValue","%",ui.rightMeter);
   bindRange("speed","speedValue","ms");
   bindRange("testDuration","testValue","ms");
   bindRange("lowFreq","lowFreqValue","Hz");
   bindRange("highFreq","highFreqValue","Hz");
 
-  function gamepads(){
-    return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
+  // Meters show the live output while running, the slider value otherwise.
+  function showOutput(l,r){
+    ui.leftMeter.style.width=(l==null?num(ui.left):l*100)+"%";
+    ui.rightMeter.style.width=(r==null?num(ui.right):r*100)+"%";
   }
-  function getCurrentGamepad(){
-    if(state.gpIndex==null) return null;
-    return navigator.getGamepads?.()[state.gpIndex] || null;
+
+  function setRunningUI(on){
+    ui.shake.classList.toggle("active",on);
+    ui.shake.textContent=on?"STOP":"SHAKE";
+    ui.shake.setAttribute("aria-pressed",on);
+    if(!on) showOutput(null,null);
   }
-  function getActuator(gp){
-    if(!gp) return null;
-    return gp.vibrationActuator || (gp.hapticActuators && gp.hapticActuators[0]) || null;
-  }
-  function hasHaptics(gp){
-    const a=getActuator(gp);
-    return !!(a && (typeof a.playEffect==="function" || typeof a.pulse==="function"));
+
+  /* ---------- Identification ---------- */
+
+  function identifyByIds(vid,pid){
+    return (VENDORS[vid] && VENDORS[vid](pid)) || null;
   }
 
   function identifyByName(name=""){
     const s=name.toLowerCase();
-    if(/dualsense|0ce6|0df2|054c.*(0ce6|0df2)/.test(s)) return "dualsense";
-    if(/dualshock|wireless controller.*054c|05c4|09cc/.test(s)) return "ds4";
+    if(/dualsense/.test(s)) return "dualsense";
     if(/elite.*series.*2/.test(s)) return "elite2";
     if(/xbox|xinput/.test(s)) return "xbox";
-    if(/switch pro|pro controller.*nintendo/.test(s)) return "switchpro";
+    if(/dualshock|^wireless controller\b/.test(s)) return "ds4";
+    if(/switch pro|pro controller/.test(s)) return "switchpro";
     if(/joy-?con/.test(s)) return "joycon";
     if(/steam controller/.test(s)) return "steam";
     if(/wolverine/.test(s)) return "razer";
@@ -429,21 +510,126 @@
     return "other";
   }
 
+  // Chrome: "Name (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)" · Firefox: "54c-ce6-Name"
+  function parseGamepadIds(id){
+    const m=/vendor:\s*([0-9a-f]{1,4})\s+product:\s*([0-9a-f]{1,4})/i.exec(id) || /^([0-9a-f]{1,4})-([0-9a-f]{1,4})-/i.exec(id);
+    return m ? [parseInt(m[1],16),parseInt(m[2],16)] : [0,0];
+  }
+  function identifyGamepad(id=""){
+    const [vid,pid]=parseGamepadIds(id);
+    return identifyByIds(vid,pid) || identifyByName(id);
+  }
   function identifyHID(dev){
-    if(dev.vendorId===0x054c){
-      if([0x0ce6,0x0df2].includes(dev.productId)) return "dualsense";
-      if([0x05c4,0x09cc,0x0ba0].includes(dev.productId)) return "ds4";
-    }
-    if(dev.vendorId===0x057e){
-      if(dev.productId===0x2009) return "switchpro";
-      if([0x2006,0x2007,0x200e].includes(dev.productId)) return "joycon";
-    }
-    return identifyByName(dev.productName||"");
+    return identifyByIds(dev.vendorId,dev.productId) || identifyByName(dev.productName||"");
   }
 
   function profileLabel(key){
     return (PROFILES[key]||PROFILES.other).title.replace(" · "," — ");
   }
+
+  /* ---------- Gamepad API ---------- */
+
+  function gamepads(){
+    try{ return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : []; }
+    catch(e){ return []; }
+  }
+  function getCurrentGamepad(){
+    if(state.gpIndex==null) return null;
+    return gamepads().find(g=>g.index===state.gpIndex) || null;
+  }
+  function getActuator(gp){
+    if(!gp) return null;
+    return gp.vibrationActuator || (gp.hapticActuators && gp.hapticActuators[0]) || null;
+  }
+  function hasHaptics(gp){
+    const a=getActuator(gp);
+    return !!(a && (typeof a.playEffect==="function" || typeof a.pulse==="function"));
+  }
+  function supportsEffect(a,name){
+    if(Array.isArray(a?.effects)) return a.effects.includes(name);
+    return name==="dual-rumble" && (a?.type==="dual-rumble" || typeof a?.playEffect==="function");
+  }
+
+  function updateTriggerToggle(){
+    const a=state.output==="gamepad" ? getActuator(getCurrentGamepad()) : null;
+    $("triggerToggle").classList.toggle("hidden",!(a && supportsEffect(a,"trigger-rumble") && !state.noTriggers));
+  }
+
+  function chooseBestGamepad(){
+    const pads=gamepads();
+    if(!pads.length) return null;
+    const selected=ui.profile.value;
+    let candidates=pads;
+    if(selected!=="auto"){
+      const filtered=pads.filter(g=>identifyGamepad(g.id)===selected);
+      if(filtered.length) candidates=filtered;
+    }
+    return candidates.find(hasHaptics) || candidates[0];
+  }
+
+  function attachGamepad(gp){
+    const kind=identifyGamepad(gp.id);
+    state.gpIndex=gp.index;
+    state.noPlayEffect=false;
+    state.noTriggers=false;
+    if(kind==="f310"){
+      setDetected(kind);
+      setStatus("Logitech F310 détecté","Ce modèle ne contient aucun moteur de vibration.","warn","SANS RUMBLE");
+      return false;
+    }
+    if(hasHaptics(gp)){
+      state.output="gamepad";
+      setDetected(kind);
+      const a=getActuator(gp);
+      const effects=Array.isArray(a.effects)&&a.effects.length?a.effects.join(", "):"vibration";
+      setStatus(profileLabel(kind),gp.id+" · "+effects,"ok","GAMEPAD HAPTICS");
+      updateTriggerToggle();
+      return true;
+    }
+    if(state.output!=="hid"){
+      setDetected(kind);
+      setStatus(profileLabel(kind),gp.id+" · aucun actionneur haptique exposé","warn","DÉTECTÉ");
+    }
+    return false;
+  }
+
+  // Effects are fired without awaiting: each call preempts the previous one,
+  // so the loop keeps a steady rhythm instead of waiting for every effect to end.
+  function writeGamepad(L,R,duration){
+    const a=getActuator(getCurrentGamepad());
+    if(!a) throw new Error("Actionneur haptique non disponible");
+    const ms=Math.max(30,Math.round(duration));
+    if(typeof a.playEffect==="function" && !state.noPlayEffect){
+      const triggers=ui.triggers.checked && !state.noTriggers && supportsEffect(a,"trigger-rumble");
+      const params={startDelay:0,duration:ms,strongMagnitude:L,weakMagnitude:R};
+      const p=triggers
+        ? a.playEffect("trigger-rumble",{...params,leftTrigger:L,rightTrigger:R})
+        : a.playEffect("dual-rumble",params);
+      Promise.resolve(p).catch(()=>{
+        if(triggers){ state.noTriggers=true; updateTriggerToggle(); }
+        else state.noPlayEffect=true; // single-actuator controller: use pulse()
+      });
+      return;
+    }
+    if(typeof a.pulse==="function"){
+      Promise.resolve(a.pulse(Math.max(L,R),ms)).catch(()=>{});
+      return;
+    }
+    throw new Error("Le navigateur ne fournit pas de méthode de vibration");
+  }
+
+  function stopGamepad(){
+    const a=getActuator(getCurrentGamepad());
+    if(!a) return;
+    try{
+      const p=a.reset ? a.reset()
+        : a.playEffect ? a.playEffect("dual-rumble",{duration:1,strongMagnitude:0,weakMagnitude:0})
+        : a.pulse ? a.pulse(0,1) : null;
+      Promise.resolve(p).catch(()=>{});
+    }catch(e){}
+  }
+
+  /* ---------- WebHID: Sony ---------- */
 
   function outputReportIds(dev){
     const ids=[];
@@ -468,43 +654,14 @@
     return "unknown";
   }
 
-  function profileFromConnected(kind){
-    if($("profile").value==="auto" && kind && PROFILES[kind]){
-      state.profile=kind;
-    } else {
-      state.profile=$("profile").value;
-    }
-    renderProfile();
-  }
-
-  function chooseBestGamepad(){
-    const pads=gamepads();
-    if(!pads.length) return null;
-    const selected=$("profile").value;
-    let candidates=pads;
-    if(selected!=="auto"){
-      const filtered=pads.filter(g=>identifyByName(g.id)===selected);
-      if(filtered.length) candidates=filtered;
-    }
-    return candidates.find(hasHaptics) || candidates[0];
-  }
-
-  async function attachGamepad(gp){
-    state.gpIndex=gp.index;
-    const kind=identifyByName(gp.id);
-    profileFromConnected(kind);
-    if(kind==="f310"){
-      setStatus("Logitech F310 détecté","Ce modèle ne contient aucun moteur de vibration.","warn","SANS RUMBLE");
-      return false;
-    }
-    if(hasHaptics(gp)){
-      const a=getActuator(gp);
-      const effects=Array.isArray(a.effects)?a.effects.join(", "):"vibration";
-      setStatus(profileLabel(kind),gp.id+" · "+effects,"ok","GAMEPAD HAPTICS");
-      return true;
-    }
-    setStatus(profileLabel(kind),gp.id+" · aucun actionneur haptique exposé","warn","DÉTECTÉ");
-    return false;
+  // Firmware 2.24+ offers an improved rumble emulation (same as Linux hid-playstation / SDL).
+  async function detectDualSenseFirmware(d){
+    state.dsVibrationV2=false;
+    try{
+      const v=await d.receiveFeatureReport(0x20);
+      const o=v.getUint8(0)===0x20 ? 0 : -1; // report ID may or may not be included
+      if(v.byteLength>=o+46) state.dsVibrationV2=v.getUint16(o+44,true)>=0x0224;
+    }catch(e){}
   }
 
   // CRC32 used by Sony Bluetooth output reports.
@@ -517,93 +674,96 @@
     }
     return t;
   })();
-  function crc32(bytes){
-    let crc=0xFFFFFFFF;
+  function crc32(bytes, crc=0xFFFFFFFF){
     for(const b of bytes) crc=(crc>>>8)^crcTable[(crc^b)&255];
-    return (crc^0xFFFFFFFF)>>>0;
+    return crc;
   }
   function appendSonyCRC(reportId, data){
-    const body=Array.from(data.slice(0,-4));
-    const crc=crc32([0xA2,reportId,...body]);
     const o=data.length-4;
+    const crc=(crc32(data.subarray(0,o),crc32([0xA2,reportId]))^0xFFFFFFFF)>>>0;
     data[o]=crc&255; data[o+1]=(crc>>>8)&255; data[o+2]=(crc>>>16)&255; data[o+3]=(crc>>>24)&255;
   }
 
-  async function sendDualSense(left,right){
-    const d=state.hid;
-    if(!d?.opened) throw new Error("DualSense HID non ouverte");
-    const L=Math.round(clamp(left,0,1)*255);
-    const R=Math.round(clamp(right,0,1)*255);
-    const transport=state.hidTransport;
-    if(transport==="bluetooth"){
-      const reportId=0x31;
-      const data=new Uint8Array(77);
-      data[0]=((state.btSeq++ & 0x0F)<<4);
-      data[1]=0x10;
-      data[2]=0xFF; // valid_flag0
-      data[3]=0xF7; // valid_flag1
-      data[4]=R;
-      data[5]=L;
-      appendSonyCRC(reportId,data);
-      await d.sendReport(reportId,data);
-    }else{
-      const reportId=0x02;
-      // DualSense WebHID descriptor accepts 47-byte payload on common Chromium builds.
-      const data=new Uint8Array(47);
-      data[0]=0xFF;
-      data[1]=0xF7;
-      data[2]=R;
-      data[3]=L;
-      await d.sendReport(reportId,data);
-    }
+  // Only the motor bits are flagged valid, so lightbar, LEDs and audio volumes are left untouched.
+  function writeDualSenseCommon(data,o,L,R){
+    data[o]=0x03;     // valid_flag0: compatible vibration + haptics select
+    data[o+1]=0x00;   // valid_flag1
+    data[o+2]=R;
+    data[o+3]=L;
+    if(state.dsVibrationV2) data[o+38]=0x04; // valid_flag2: improved rumble emulation
   }
 
-  async function sendDS4(left,right){
-    const d=state.hid;
-    if(!d?.opened) throw new Error("DualShock 4 HID non ouverte");
-    const L=Math.round(clamp(left,0,1)*255);
-    const R=Math.round(clamp(right,0,1)*255);
-    if(state.hidTransport==="bluetooth"){
-      const reportId=0x11;
+  function sonyReport(kind,L,R,bt){
+    if(kind==="dualsense"){
+      if(bt){
+        const data=new Uint8Array(77);
+        data[0]=(state.seq++ & 0x0F)<<4;
+        data[1]=0x10;
+        writeDualSenseCommon(data,2,L,R);
+        appendSonyCRC(0x31,data);
+        return [0x31,data];
+      }
+      // DualSense WebHID descriptor accepts a 47-byte payload on common Chromium builds.
+      const data=new Uint8Array(47);
+      writeDualSenseCommon(data,0,L,R);
+      return [0x02,data];
+    }
+    if(bt){
       const data=new Uint8Array(77);
       data[0]=0xC4; // HID + CRC + 4ms polling
       data[1]=0x00; // audio control
       data[2]=0x01; // valid_flag0: motors
-      data[3]=0x00;
-      data[4]=0x00;
       data[5]=R;
       data[6]=L;
-      appendSonyCRC(reportId,data);
-      await d.sendReport(reportId,data);
-    }else{
-      const reportId=0x05;
-      const data=new Uint8Array(31);
-      data[0]=0x01; // valid_flag0: motors
-      data[1]=0x00;
-      data[2]=0x00;
-      data[3]=R;
-      data[4]=L;
-      await d.sendReport(reportId,data);
+      appendSonyCRC(0x11,data);
+      return [0x11,data];
     }
+    const data=new Uint8Array(31);
+    data[0]=0x01; // valid_flag0: motors
+    data[3]=R;
+    data[4]=L;
+    return [0x05,data];
   }
+
+  async function writeSony(left,right,force){
+    const d=state.hid;
+    if(!d?.opened) throw new Error(profileLabel(state.hidKind)+" : HID non ouverte");
+    const L=Math.round(clamp(left,0,1)*255);
+    const R=Math.round(clamp(right,0,1)*255);
+    const now=performance.now();
+    const last=state.lastSony;
+    if(!force && last && last.L===L && last.R===R && now-last.at<SONY_KEEPALIVE_MS) return;
+    try{
+      await d.sendReport(...sonyReport(state.hidKind,L,R,state.hidTransport==="bluetooth"));
+    }catch(e){
+      // Descriptor did not tell the transport: the USB guess failed, try Bluetooth once.
+      if(state.hidTransport!=="unknown") throw e;
+      state.hidTransport="bluetooth";
+      await d.sendReport(...sonyReport(state.hidKind,L,R,true));
+    }
+    if(state.hidTransport==="unknown") state.hidTransport="usb";
+    state.lastSony={L,R,at:now};
+  }
+
+  /* ---------- WebHID: Nintendo ---------- */
 
   function encodeNintendoRumble(lowFrequency,highFrequency,amplitude){
     const low=clamp(Number(lowFrequency),40.875885,626.286133);
     const high=clamp(Number(highFrequency),81.75177,1252.572266);
-    let hf=(Math.round(32*Math.log2(high*0.1))-0x60)*4;
-    let lf=Math.round(32*Math.log2(low*0.1))-0x40;
+    const hf=(Math.round(32*Math.log2(high*0.1))-0x60)*4;
+    const lf=Math.round(32*Math.log2(low*0.1))-0x40;
     const amp=clamp(Number(amplitude),0,1);
     let hfAmp;
     if(amp===0) hfAmp=0;
     else if(amp<0.117) hfAmp=(Math.log2(amp*1000)*32-0x60)/(5-amp**2)-1;
     else if(amp<0.23) hfAmp=Math.log2(amp*1000)*32-0x60-0x5c;
     else hfAmp=(Math.log2(amp*1000)*32-0x60)*2-0xf6;
-    hfAmp=Math.round(hfAmp);
-    let lfAmp=hfAmp*0.5;
-    const parity=Math.abs(lfAmp%2)>0;
+    // Encoded amplitudes are even values in 0x00–0xC8; tiny inputs would otherwise go negative.
+    hfAmp=clamp(Math.round(hfAmp/2)*2,0,0xc8);
+    let lfAmp=hfAmp/2;
+    const parity=lfAmp%2===1;
     if(parity) --lfAmp;
-    lfAmp=lfAmp>>1;
-    lfAmp+=0x40;
+    lfAmp=(lfAmp>>1)+0x40;
     if(parity) lfAmp|=0x8000;
     return [
       hf&0xff,
@@ -616,93 +776,80 @@
   async function initNintendo(){
     const d=state.hid;
     if(!d?.opened) return;
-    const ids=outputReportIds(d);
-    try{
-      if(ids.includes(0x80)){
-        await d.sendReport(0x80,new Uint8Array([0x01]));
-        await d.sendReport(0x80,new Uint8Array([0x02]));
-        await d.sendReport(0x01,new Uint8Array([0x03]));
-        await d.sendReport(0x80,new Uint8Array([0x04]));
-      }
-    }catch(e){}
+    // USB only: handshake, 3 Mbit baudrate, handshake, then force HID mode (no timeout).
+    if(outputReportIds(d).includes(0x80)){
+      try{
+        for(const cmd of [0x02,0x03,0x02,0x04]){
+          await d.sendReport(0x80,new Uint8Array([cmd]));
+          await sleep(30);
+        }
+      }catch(e){}
+    }
+    // Subcommand 0x48 0x01: enable vibration (neutral rumble data in between).
     const neutral=[0x00,0x00,0x01,0x40,0x40,0x00,0x01,0x40,0x40,0x48,0x01];
     await d.sendReport(0x01,new Uint8Array(neutral));
     state.nintendoReady=true;
   }
 
-  async function sendNintendo(left,right){
+  async function writeNintendo(left,right){
     const d=state.hid;
     if(!d?.opened) throw new Error("Manette Nintendo HID non ouverte");
     if(!state.nintendoReady) await initNintendo();
-    const low=Number($("lowFreq").value), high=Number($("highFreq").value);
-    const leftBytes=encodeNintendoRumble(low,high,left);
-    const rightBytes=encodeNintendoRumble(low,high,right);
-    const pid=d.productId;
-    let l=leftBytes,r=rightBytes;
-    if(pid===0x2006) r=encodeNintendoRumble(low,high,0); // Joy-Con L
-    if(pid===0x2007) l=encodeNintendoRumble(low,high,0); // Joy-Con R
-    const data=new Uint8Array([state.btSeq++&0x0F,...l,...r]);
+    const low=num(ui.lowFreq), high=num(ui.highFreq);
+    let l=left, r=right;
+    // A single Joy-Con only has one motor: drive it with the strongest side.
+    if(d.productId===0x2006){ l=Math.max(left,right); r=0; }
+    if(d.productId===0x2007){ r=Math.max(left,right); l=0; }
+    const data=new Uint8Array([state.seq++&0x0F,...encodeNintendoRumble(low,high,l),...encodeNintendoRumble(low,high,r)]);
     await d.sendReport(0x10,data);
   }
 
-  async function sendGamepad(left,right,duration=140){
-    const gp=getCurrentGamepad();
-    const a=getActuator(gp);
-    if(!a) throw new Error("Actionneur haptique non disponible");
-    const L=clamp(left,0,1),R=clamp(right,0,1);
-    if(typeof a.playEffect==="function"){
-      try{
-        await a.playEffect("dual-rumble",{
-          startDelay:0,
-          duration:Math.max(30,duration),
-          strongMagnitude:L,
-          weakMagnitude:R
-        });
-        return;
-      }catch(e){
-        // Fall through to pulse for single-actuator controllers.
-      }
-    }
-    if(typeof a.pulse==="function"){
-      await a.pulse(Math.max(L,R),Math.max(30,duration));
-      return;
-    }
-    throw new Error("Le navigateur ne fournit pas de méthode de vibration");
+  /* ---------- Output ---------- */
+
+  // All writes are serialized: a write queued before a stop can never land after it.
+  let queue=Promise.resolve();
+  function enqueue(fn){
+    const p=queue.then(fn);
+    queue=p.catch(()=>{});
+    return p;
   }
 
-  async function sendOutput(left,right,duration=140){
-    if(state.hid && state.hid.opened){
-      if(state.hidKind==="dualsense") return sendDualSense(left,right);
-      if(state.hidKind==="ds4") return sendDS4(left,right);
-      if(state.hidKind==="switchpro" || state.hidKind==="joycon") return sendNintendo(left,right);
-    }
-    if(getCurrentGamepad() && hasHaptics(getCurrentGamepad())) return sendGamepad(left,right,duration);
+  function hidUsable(){ return !!(state.hid?.opened && HID_KINDS.includes(state.hidKind)); }
+  function gamepadUsable(){ return hasHaptics(getCurrentGamepad()); }
+  function usable(){ return hidUsable() || gamepadUsable(); }
+
+  function writeHID(left,right,force){
+    if(isSony(state.hidKind)) return writeSony(left,right,force);
+    return writeNintendo(left,right);
+  }
+
+  function writeOutput(left,right,duration){
+    const useHID=hidUsable() && (state.output!=="gamepad" || !gamepadUsable());
+    if(useHID) return writeHID(left,right,false);
+    if(gamepadUsable()) return writeGamepad(clamp(left,0,1),clamp(right,0,1),duration);
     throw new Error("Aucun moteur de vibration pilotable n'est connecté");
+  }
+
+  function sendOutput(left,right,token){
+    return enqueue(()=>{
+      if(token!==state.token) return;
+      return writeOutput(left,right,TICK_MS+GAMEPAD_MARGIN_MS);
+    });
   }
 
   async function hardStop(){
     state.running=false;
     state.token++;
-    $("shakeBtn").classList.remove("active");
-    $("shakeBtn").textContent="SHAKE / STOP";
-    try{
-      if(state.hid?.opened){
-        if(state.hidKind==="dualsense") await sendDualSense(0,0);
-        else if(state.hidKind==="ds4") await sendDS4(0,0);
-        else if(state.hidKind==="switchpro" || state.hidKind==="joycon") await sendNintendo(0,0);
-      }
-    }catch(e){}
-    try{
-      const gp=getCurrentGamepad(), a=getActuator(gp);
-      if(a?.reset) await a.reset();
-      else if(a?.playEffect) await a.playEffect("dual-rumble",{duration:1,strongMagnitude:0,weakMagnitude:0});
-      else if(a?.pulse) await a.pulse(0,1);
-    }catch(e){}
+    setRunningUI(false);
+    await enqueue(async ()=>{
+      try{ if(hidUsable()) await writeHID(0,0,true); }catch(e){}
+      stopGamepad();
+    });
   }
 
   function patternFactors(now){
-    const mode=$("pattern").value;
-    const speed=Math.max(60,Number($("speed").value));
+    const mode=ui.pattern.value;
+    const speed=Math.max(60,num(ui.speed));
     if(mode==="continuous") return [1,1];
     if(mode==="pulse"){
       const phase=Math.floor(now/speed)%2;
@@ -728,7 +875,7 @@
       return [0,0];
     }
     if(mode==="random"){
-      if(now-state.lastRandomAt>speed){
+      if(now-state.lastRandomAt>=speed){
         state.lastRandomAt=now;
         state.randomPair=[Math.random(),Math.random()];
       }
@@ -737,64 +884,73 @@
     return [1,1];
   }
 
-  async function runShake(){
-    if(state.running){ await hardStop(); return; }
-    const usable = (state.hid?.opened && ["dualsense","ds4","switchpro","joycon"].includes(state.hidKind))
-      || (getCurrentGamepad() && hasHaptics(getCurrentGamepad()));
-    if(!usable){
-      toast("Connecte d'abord une manette avec vibration disponible.");
+  // Shared engine for SHAKE (pattern, until stopped) and TEST (steady, fixed duration).
+  async function start(mode){
+    await hardStop();
+    if(!usable()){
+      if(mode==="shake") toast("Connecte d'abord une manette avec vibration disponible.");
       await connectController();
-      return;
+      if(!usable()) return;
     }
 
-    state.running=true;
     const token=++state.token;
-    $("shakeBtn").classList.add("active");
-    $("shakeBtn").textContent="STOP";
-    const start=performance.now();
+    state.running=true;
+    state.lastRandomAt=-Infinity;
+    setRunningUI(true);
+    const t0=performance.now();
+    const end=mode==="test" ? t0+num(ui.testDuration) : Infinity;
 
     try{
-      while(state.running && token===state.token){
-        const now=performance.now()-start;
-        const [fl,fr]=patternFactors(now);
-        const l=(Number($("leftPower").value)/100)*fl;
-        const r=(Number($("rightPower").value)/100)*fr;
-        await sendOutput(l,r,145);
-        await sleep(85);
+      while(token===state.token){
+        const t=performance.now();
+        if(t>=end) break;
+        const [fl,fr]=mode==="test" ? [1,1] : patternFactors(t-t0);
+        const l=num(ui.left)/100*fl;
+        const r=num(ui.right)/100*fr;
+        showOutput(l,r);
+        await sendOutput(l,r,token);
+        await sleep(TICK_MS);
+      }
+      if(token===state.token){
+        await hardStop();
+        if(mode==="test") toast("Test terminé.");
       }
     }catch(e){
+      if(token!==state.token) return;
       await hardStop();
-      setStatus("Vibration interrompue",e.message,"bad","ERREUR");
+      setStatus(mode==="test"?"Test impossible":"Vibration interrompue",e.message,"bad","ERREUR");
       toast(e.message,4200);
     }
   }
 
-  async function testController(){
-    await hardStop();
-    const usable = (state.hid?.opened && ["dualsense","ds4","switchpro","joycon"].includes(state.hidKind))
-      || (getCurrentGamepad() && hasHaptics(getCurrentGamepad()));
-    if(!usable){
-      await connectController();
-      const usable2=(state.hid?.opened && ["dualsense","ds4","switchpro","joycon"].includes(state.hidKind))
-        || (getCurrentGamepad() && hasHaptics(getCurrentGamepad()));
-      if(!usable2) return;
+  /* ---------- Connection ---------- */
+
+  async function attachHID(d){
+    const kind=identifyHID(d);
+    if(!HID_KINDS.includes(kind)) return false;
+    if(!d.opened) await d.open();
+    if(state.hid && state.hid!==d && state.hid.opened){
+      try{ await state.hid.close(); }catch(e){}
     }
-    const duration=Number($("testDuration").value);
-    const L=Number($("leftPower").value)/100;
-    const R=Number($("rightPower").value)/100;
-    try{
-      const end=performance.now()+duration;
-      while(performance.now()<end){
-        await sendOutput(L,R,150);
-        await sleep(90);
-      }
-      await hardStop();
-      toast("Test terminé.");
-    }catch(e){
-      await hardStop();
-      setStatus("Test impossible",e.message,"bad","ERREUR");
-      toast(e.message,4200);
+    state.hid=d;
+    state.hidKind=kind;
+    state.hidTransport=detectSonyTransport(d,kind);
+    state.output="hid";
+    state.nintendoReady=false;
+    state.lastSony=null;
+    state.seq=0;
+    setDetected(kind);
+    updateTriggerToggle();
+
+    if(isSony(kind)){
+      if(kind==="dualsense") await detectDualSenseFirmware(d);
+      const tr=state.hidTransport==="bluetooth"?"Bluetooth":state.hidTransport==="usb"?"USB":"USB/Bluetooth";
+      setStatus(profileLabel(kind),(d.productName||"Wireless Controller")+" · "+tr,"ok","WEBHID SONY");
+    }else{
+      try{ await enqueue(initNintendo); }catch(e){}
+      setStatus(profileLabel(kind),(d.productName||"Nintendo Controller")+" · HD Rumble","ok","WEBHID NINTENDO");
     }
+    return true;
   }
 
   async function connectHID(){
@@ -803,38 +959,18 @@
       const devices=await navigator.hid.requestDevice({
         filters:[
           {usagePage:0x01,usage:0x05},
+          {usagePage:0x01,usage:0x04},
           {vendorId:0x054c},
           {vendorId:0x057e}
         ]
       });
       if(!devices.length) return false;
-      const d=devices[0];
-      if(!d.opened) await d.open();
-      state.hid=d;
-      state.hidKind=identifyHID(d);
-      state.hidTransport=detectSonyTransport(d,state.hidKind);
-      state.nintendoReady=false;
-      state.btSeq=0;
-      profileFromConnected(state.hidKind);
+      const d=devices.find(x=>HID_KINDS.includes(identifyHID(x))) || devices[0];
+      if(await attachHID(d)) return true;
 
-      if(state.hidKind==="dualsense" || state.hidKind==="ds4"){
-        const tr=state.hidTransport==="bluetooth"?"Bluetooth":state.hidTransport==="usb"?"USB":"USB/Bluetooth";
-        setStatus(profileLabel(state.hidKind),(d.productName||"Wireless Controller")+" · "+tr,"ok","WEBHID SONY");
-        return true;
-      }
-      if(state.hidKind==="switchpro" || state.hidKind==="joycon"){
-        try{ await initNintendo(); }catch(e){}
-        setStatus(profileLabel(state.hidKind),(d.productName||"Nintendo Controller")+" · HD Rumble","ok","WEBHID NINTENDO");
-        renderProfile();
-        return true;
-      }
-
-      // Generic HID selected: keep it for identification, but rumble needs standard Gamepad haptics.
+      // Generic HID: rumble needs the standard Gamepad haptics instead.
       const gp=chooseBestGamepad();
-      if(gp && hasHaptics(gp)){
-        await attachGamepad(gp);
-        return true;
-      }
+      if(gp && attachGamepad(gp)) return true;
       setStatus(d.productName||"Manette HID détectée","Périphérique reconnu, mais aucun protocole de vibration compatible n'est exposé.","warn","HID DÉTECTÉ");
       return false;
     }catch(e){
@@ -846,104 +982,87 @@
   async function connectController(){
     await hardStop();
 
+    // Standard haptics need no permission prompt: prefer them when exposed.
     const gp=chooseBestGamepad();
-    if(gp){
-      const ok=await attachGamepad(gp);
-      // Prefer native Sony/Nintendo HID only when standard haptics are missing.
-      if(ok) return true;
-    }
+    if(gp && attachGamepad(gp)) return true;
 
-    if("hid" in navigator){
-      const hidOK=await connectHID();
-      if(hidOK) return true;
-    }
+    if("hid" in navigator && await connectHID()) return true;
 
-    const gp2=chooseBestGamepad();
-    if(gp2){
-      const ok=await attachGamepad(gp2);
-      if(ok) return true;
-    }
-
-    if(!("hid" in navigator)){
+    if(!window.isSecureContext){
+      setStatus("Contexte non sécurisé","Ouvre la page en HTTPS ou via localhost pour accéder aux manettes.","warn","HTTPS REQUIS");
+    }else if(!("hid" in navigator)){
       setStatus("Navigateur limité","WebHID indisponible. Chrome ou Edge desktop est recommandé pour Sony/Nintendo.","warn","GAMEPAD SEUL");
       toast("Essaie Chrome ou Edge sur ordinateur, puis appuie sur un bouton de la manette.",4200);
-    }else{
+    }else if(!gamepads().length){
       setStatus("Manette non pilotable","Appuie sur un bouton de la manette puis relance « Connecter la manette ».","warn","NON CONNECTÉ");
     }
     return false;
   }
 
   $("connectBtn").onclick=connectController;
-  $("shakeBtn").onclick=runShake;
-  $("testBtn").onclick=testController;
+  ui.shake.onclick=()=>state.running ? hardStop() : start("shake");
+  $("testBtn").onclick=()=>start("test");
 
-  window.addEventListener("gamepadconnected",async e=>{
-    if(state.gpIndex==null || !hasHaptics(getCurrentGamepad())){
-      await attachGamepad(e.gamepad);
-    }
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape" && state.running){ e.preventDefault(); hardStop(); }
+  });
+
+  window.addEventListener("gamepadconnected",e=>{
+    if(state.output==="hid" && hidUsable()) return;
+    if(state.gpIndex==null || !gamepadUsable()) attachGamepad(e.gamepad);
   });
   window.addEventListener("gamepaddisconnected",async e=>{
-    if(state.gpIndex===e.gamepad.index){
-      await hardStop();
-      state.gpIndex=null;
-      if(!state.hid?.opened) setStatus("Manette déconnectée","Reconnecte-la puis utilise « Connecter la manette ».","warn","DÉCONNECTÉE");
-    }
+    if(state.gpIndex!==e.gamepad.index) return;
+    if(state.output==="gamepad") await hardStop();
+    state.gpIndex=null;
+    if(state.output==="gamepad") state.output=hidUsable()?"hid":null;
+    updateTriggerToggle();
+    if(!hidUsable()) setStatus("Manette déconnectée","Reconnecte-la puis utilise « Connecter la manette ».","warn","DÉCONNECTÉE");
   });
 
   if("hid" in navigator){
     navigator.hid.addEventListener("disconnect",async e=>{
-      if(state.hid===e.device){
-        await hardStop();
-        state.hid=null;state.hidKind=null;state.nintendoReady=false;
-        if(!getCurrentGamepad()) setStatus("Manette HID déconnectée","Reconnecte-la puis utilise « Connecter la manette ».","warn","DÉCONNECTÉE");
-      }
+      if(state.hid!==e.device) return;
+      if(state.output==="hid") await hardStop();
+      state.hid=null; state.hidKind=null; state.nintendoReady=false;
+      if(state.output==="hid") state.output=gamepadUsable()?"gamepad":null;
+      renderProfile();
+      if(!gamepadUsable()) setStatus("Manette HID déconnectée","Reconnecte-la puis utilise « Connecter la manette ».","warn","DÉCONNECTÉE");
+    });
+    // A previously authorized controller plugged back in reconnects without a picker.
+    navigator.hid.addEventListener("connect",async e=>{
+      if(hidUsable() || state.running) return;
+      try{ await attachHID(e.device); }catch(err){}
     });
   }
 
-  document.addEventListener("visibilitychange",()=>{ if(document.hidden) hardStop(); });
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden && state.running) hardStop(); });
   window.addEventListener("pagehide",()=>{ hardStop(); });
-  window.addEventListener("beforeunload",()=>{ hardStop(); });
 
   async function restoreKnown(){
     // Gamepad devices already exposed to the page.
     const gp=chooseBestGamepad();
-    if(gp && hasHaptics(gp)){
-      await attachGamepad(gp);
-      return;
-    }
+    if(gp && attachGamepad(gp)) return;
     // Previously granted HID devices can be reopened without a new picker.
     if("hid" in navigator){
       try{
         const known=await navigator.hid.getDevices();
-        const d=known.find(x=>["dualsense","ds4","switchpro","joycon"].includes(identifyHID(x)));
-        if(d){
-          if(!d.opened) await d.open();
-          state.hid=d;
-          state.hidKind=identifyHID(d);
-          state.hidTransport=detectSonyTransport(d,state.hidKind);
-          state.nintendoReady=false;
-          state.btSeq=0;
-          if(state.hidKind==="switchpro" || state.hidKind==="joycon"){
-            try{await initNintendo();}catch(e){}
-          }
-          profileFromConnected(state.hidKind);
-          const tr=state.hidTransport==="unknown"?"HID":state.hidTransport.toUpperCase();
-          setStatus(profileLabel(state.hidKind),(d.productName||"Manette")+" · "+tr,"ok",
-            state.hidKind.startsWith("switch")||state.hidKind==="joycon"?"WEBHID NINTENDO":"WEBHID SONY");
-        }
+        const d=known.find(x=>HID_KINDS.includes(identifyHID(x)));
+        if(d) await attachHID(d);
       }catch(e){}
     }
   }
 
   // Browser capability note.
-  if(!navigator.getGamepads){
+  if(!window.isSecureContext){
+    $("footNote").textContent="Contexte non sécurisé : la Gamepad API et WebHID exigent HTTPS ou localhost. Ouvre la page via https:// ou http://localhost dans Chrome/Edge.";
+  }else if(!navigator.getGamepads){
     $("footNote").textContent="Ce navigateur ne fournit pas la Gamepad API. Utilise Chrome ou Edge récent sur ordinateur.";
   }else if(!("hid" in navigator)){
     $("footNote").textContent="Gamepad API disponible, mais WebHID absent : Xbox/XInput peut fonctionner, tandis que Sony/Nintendo sera plus limité. Chrome ou Edge desktop est recommandé.";
-  }else if(!window.isSecureContext){
-    $("footNote").textContent="WebHID demande normalement un contexte sécurisé. Si le fichier local bloque l'accès HID, ouvre-le via localhost dans Chrome/Edge.";
   }
 
+  renderProfile();
   restoreKnown();
 })();
 </script>

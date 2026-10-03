@@ -1,62 +1,59 @@
-🎮 ShakeMyController
-ShakeMyController is a lightweight, self-contained web application designed to test, control, and trigger haptic rumble/vibrations on various game controllers directly from your web browser.
+# 🎮 ShakeMyController
 
-The app runs entirely locally in your browser — no data is ever sent to an external server.
+**ShakeMyController** is a lightweight, self-contained web page to test, control and trigger haptic rumble on game controllers directly from your browser.
 
-✨ Features
-🔌 Multi-Protocol Support: Leverages standard browser Gamepad Haptics API alongside direct WebHID control (for Sony & Nintendo hardware).
+Everything runs locally: a single HTML file, no dependencies, no network requests, and no data ever leaves your machine.
 
-🎮 Broad Controller Compatibility:
+**[⬇️ Download ShakeMyController.html](https://github.com/cdqp/ShakeMyController/blob/main/ShakeMyController.html)**
 
-PlayStation: DualSense (PS5) and DualShock 4 (PS4) with independent dual-motor control via Sony WebHID (USB & Bluetooth).
+## ✨ Features
 
-Nintendo: Switch Pro Controller and Joy-Cons with HD Rumble tuning (low & high frequency adjustments).
+### 🔌 Multi-protocol support
+- **Gamepad API haptics** (`dual-rumble`, and `trigger-rumble` when the browser exposes it), with no permission prompt.
+- **Direct WebHID control** for Sony and Nintendo hardware, over USB or Bluetooth.
 
-Xbox & PC: Xbox Wireless Controller, Xbox Elite Series 2, 8BitDo, Razer Wolverine, SCUF Envision Pro, etc., via standard Gamepad API / XInput.
+### 🎮 Controller compatibility
 
-🌊 Customizable Vibration Patterns:
+| Family | Models | Path |
+| --- | --- | --- |
+| PlayStation | DualSense (PS5), DualSense Edge, DualShock 4 (PS4) | Sony WebHID (USB & Bluetooth, CRC32 signed reports) or Gamepad API |
+| Nintendo | Switch Pro Controller, Joy-Con (L/R) | Nintendo WebHID with HD Rumble (low & high frequency) |
+| Xbox & PC | Xbox Wireless, Xbox Elite Series 2, 8BitDo, Razer Wolverine, SCUF Envision Pro… | Gamepad API / XInput, optional Impulse Triggers |
 
-Continuous
+Controllers are identified by USB vendor/product ID, with a name-based fallback. Controllers without a rumble motor (e.g. Logitech F310) are detected and reported as such.
 
-Pulses
+### 🌊 Vibration patterns
+Continuous · Pulses · Heartbeat · Left/Right alternating · Progressive wave · Ramp up · Random
 
-Heartbeat
+### 🎛️ Precision tuning
+- Independent power sliders for the left (heavy / low frequency) and right (light / high frequency) motors, with live output meters.
+- Adjustable rhythm interval and quick-test duration.
+- HD Rumble frequency controls (Hz) for Nintendo hardware.
+- Settings and theme are remembered between visits.
 
-Left / Right Alternating
+### 🌓 Interface
+Dark / light themes (follows the system preference by default), responsive desktop and mobile layout, keyboard accessible. Press **Esc** to stop any vibration immediately.
 
-Progressive Wave
+## 🚀 Usage
 
-Ramp Up
+1. Open `ShakeMyController.html` in **Google Chrome** or **Microsoft Edge** (desktop).
+2. Turn the controller on and press any button on it.
+3. Click **Connecter la manette** and, if prompted, pick your controller in the WebHID dialog.
+4. Use **SHAKE** for the selected pattern, or **TEST** for a short burst.
 
-Random Pattern
+WebHID requires a secure context. If opening the file directly does not work, serve it locally:
 
-🎛️ Precision Tuning:
+```sh
+python3 -m http.server 8000
+# then open http://localhost:8000/ShakeMyController.html
+```
 
-Independent power sliders for Left (Heavy / Low frequency) and Right (Light / High frequency) motors.
+## 🧰 Requirements
+- **Browser:** Chrome or Edge (desktop) for full WebHID support. Other browsers are limited to the Gamepad API.
+- **Connection:** USB cable, Bluetooth, or 2.4 GHz adapter, depending on what the OS driver exposes.
+- **Security context:** HTTPS or `localhost`.
 
-Adjust speed/rhythm interval and quick-test duration.
-
-Dedicated frequency controls (Hz) for HD Rumble compatible hardware.
-
-🌓 Modern & Responsive UI: Clean interface with native Dark / Light mode support, optimized for both desktop and mobile views.
-
-🚀 Technical Requirements
-Recommended Browsers: Google Chrome or Microsoft Edge (Desktop) for full WebHID API support.
-
-Connections: USB Cable, Bluetooth, or 2.4 GHz Wireless Adapters (depending on OS driver exposure).
-
-Security Context: Must be served over HTTPS or localhost to grant browser HID device permissions.
-
-🛠️ Built With
-Frontend: HTML5, Plain CSS3 (CSS Variables, Responsive Layouts, Native Theme Switching).
-
-JavaScript: Vanilla JS (Zero external dependencies).
-
-Web APIs:
-
-Gamepad API (Haptic Actuators / Dual-Rumble)
-
-WebHID API (Direct Output Reports & CRC32 checksum calculations for Sony/Nintendo hardware)
-
-
-DOWNLOAD >>> https://github.com/cdqp/ShakeMyController/blob/main/ShakeMyController.html
+## 🛠️ Built with
+- HTML5 and plain CSS3 (custom properties, responsive layout, theme switching)
+- Vanilla JavaScript, zero external dependencies
+- Web APIs: Gamepad API (haptic actuators) and WebHID (raw output reports, CRC32 for Sony Bluetooth)
