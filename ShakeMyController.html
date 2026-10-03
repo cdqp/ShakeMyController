@@ -38,7 +38,8 @@
   }
   .shell{width:min(900px,100%);margin:0 auto}
   .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:4px 0 22px}
-  .brand h1{font-size:clamp(28px,5vw,48px);line-height:.95;letter-spacing:-.055em;margin:0;font-weight:900}
+  .brand{min-width:0}
+  .brand h1{font-size:clamp(22px,6.4vw,48px);overflow-wrap:anywhere;line-height:.95;letter-spacing:-.055em;margin:0;font-weight:900}
   .brand h1 span{color:var(--accent)}
   .brand p{margin:9px 0 0;color:var(--muted);font-size:14px}
   .themes{display:flex;gap:8px;flex:none}
@@ -269,6 +270,7 @@
     set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
   };
 
+  const VERSION="1.1.0";
   const TICK_MS=40;              // pattern resolution / output refresh rate
   const GAMEPAD_MARGIN_MS=120;   // each Gamepad effect outlives a tick so there is no gap
   const SONY_KEEPALIVE_MS=1000;  // Sony motors hold their value: resend only on change
@@ -1061,6 +1063,17 @@
   }else if(!("hid" in navigator)){
     $("footNote").textContent="Gamepad API disponible, mais WebHID absent : Xbox/XInput peut fonctionner, tandis que Sony/Nintendo sera plus limité. Chrome ou Edge desktop est recommandé.";
   }
+
+  // Read-only hooks for the automated tests and for debugging from the console.
+  window.ShakeMyController=Object.freeze({
+    version:VERSION,
+    crc32:bytes=>(crc32(bytes)^0xFFFFFFFF)>>>0,
+    sonyReport,
+    encodeNintendoRumble,
+    identifyGamepad,
+    identifyHID,
+    patternFactors
+  });
 
   renderProfile();
   restoreKnown();

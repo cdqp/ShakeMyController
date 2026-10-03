@@ -1,0 +1,15 @@
+name: 💡 Feature or controller request
+description: Suggest a feature, a vibration pattern, or support for a new controller.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: input
+    id: ids
+    attributes:
+      label: Controller vendor / product ID (for new controllers)
+      description: Shown by chrome://device-log or in the Gamepad id, e.g. "Vendor: 054c Product: 0ce6".

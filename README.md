@@ -1,10 +1,14 @@
 # 🎮 ShakeMyController
 
+[![CI](https://github.com/cdqp/ShakeMyController/actions/workflows/ci.yml/badge.svg)](https://github.com/cdqp/ShakeMyController/actions/workflows/ci.yml)
+
 **ShakeMyController** is a lightweight, self-contained web page to test, control and trigger haptic rumble on game controllers directly from your browser.
 
 Everything runs locally: a single HTML file, no dependencies, no network requests, and no data ever leaves your machine.
 
-**[⬇️ Download ShakeMyController.html](https://github.com/cdqp/ShakeMyController/blob/main/ShakeMyController.html)**
+**[▶️ Open it online](https://cdqp.github.io/ShakeMyController/)** · **[⬇️ Download ShakeMyController.html](https://github.com/cdqp/ShakeMyController/raw/main/ShakeMyController.html)**
+
+![ShakeMyController running a wave pattern on a DualSense over Bluetooth](docs/screenshot.png)
 
 ## ✨ Features
 
@@ -36,7 +40,7 @@ Dark / light themes (follows the system preference by default), responsive deskt
 
 ## 🚀 Usage
 
-1. Open `ShakeMyController.html` in **Google Chrome** or **Microsoft Edge** (desktop).
+1. Open the [online version](https://cdqp.github.io/ShakeMyController/) or the downloaded `ShakeMyController.html` in **Google Chrome** or **Microsoft Edge** (desktop).
 2. Turn the controller on and press any button on it.
 3. Click **Connecter la manette** and, if prompted, pick your controller in the WebHID dialog.
 4. Use **SHAKE** for the selected pattern, or **TEST** for a short burst.
@@ -57,3 +61,17 @@ python3 -m http.server 8000
 - HTML5 and plain CSS3 (custom properties, responsive layout, theme switching)
 - Vanilla JavaScript, zero external dependencies
 - Web APIs: Gamepad API (haptic actuators) and WebHID (raw output reports, CRC32 for Sony Bluetooth)
+
+## 🧪 Development
+
+The app stays a single dependency-free HTML file. Node.js is only used for the test suite:
+
+```sh
+npm install
+npx playwright install chromium
+npm test
+```
+
+The tests check the protocol encoders (Sony reports and CRC32, Nintendo HD Rumble, controller identification) and drive the page end to end with simulated Gamepad API and WebHID controllers. They run on every push and pull request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to report a controller or add support for a new one, and [CHANGELOG.md](CHANGELOG.md) for release notes.
